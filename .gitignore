@@ -1,3 +1,7 @@
 .venv
 .env
 .idea
+
+question_bank/*
+
+.DS_Store
