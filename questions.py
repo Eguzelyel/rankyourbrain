@@ -1,7 +1,7 @@
 import random
 
 from dotenv import load_dotenv
-from pprint import pprint
+# from pprint import pprint
 import requests
 import logging
 import settings
@@ -28,8 +28,8 @@ class Question:
         self.question_path = question_path
         self.answer = answer
         # Each question should have weight based on the area.
-        #  for example physics and math questions should give 4 sayisal point but 1 sozel point
-        #  whereas a geography question should be 2 sayisal, 3 sozel point.
+        #  For example, physics and math questions should give 4 sayisal points but 1 sozel point
+        #  whereas a geography question should be 2 sayısal, 3 sözel points.
 
         # A question is multiple choice if answer is ABCDE,
         #  If not, it is an exact answer.
@@ -61,7 +61,7 @@ class Questions:
         - Turkce yazim kilavuzu
      Geography
         - Give a map and ask which country
-        - Give Turkish map, and ask which city
+        - Give a Turkish map, and ask which city
      Psychology, reasoning question.
 
     """
@@ -79,7 +79,7 @@ class Questions:
         Returns:
             questions: dict of list of Question objects
 
-        Final data that will be loaded is as follows.
+        the final data that will be loaded is as follows.
 
         questions = {
             "physics":[pq1_obj, pq2_obj, pq3_obj],
@@ -94,7 +94,7 @@ class Questions:
 
         # This should also extract the interest area based on the names
         #  To do this, I can carry each interest area to its folder, then
-        #  use folder name as the key.
+        #  use the folder name as the key.
         # This should return a dictionary instead
         for image_path in image_files:
             image_name, question_answer = str(image_path.with_suffix('').name).split("_")
@@ -118,12 +118,12 @@ class Questions:
                 questions[image_folder] = [question]
 
 
-        # Assuming the images are needed as file path.
+        # Assuming the images are needed as the file path.
         return questions
 
     @staticmethod
     def extract_question_from_path(image_path):
-        """ Read the image, and return a shape."""
+        """ Read the image and return a shape."""
         # I don't exactly know if this is necessary, but I assume so.
         #  Most likely image_path can be directly called from frontend.
 
@@ -131,8 +131,8 @@ class Questions:
         return image
 
     def select_question_random(self) -> Question:
-        """ Select a random question from random interest area. """
-        rand_subject = self.questions[random.randint(0, len(self.questions))]
+        """ Select a random question from a random interest area. """
+        rand_subject = random.choice(list(self.questions.keys()))
         rand_question = self.questions[rand_subject].pop(
             random.randint(
             0, len(self.questions[rand_subject]))
@@ -142,9 +142,17 @@ class Questions:
     def select_question_by_interest(self, interest_area: str):
         """ Select the question based on users selection on interests."""
         int_questions = self.get_questions_of_interest(interest_area)
-        int_question = int_questions[random.randint(0, len(int_questions))]
+        int_question = int_questions[random.randint(0, len(int_questions)-1)]
         return int_question
 
     def get_questions_of_interest(self, interest_area):
         return self.questions[interest_area]
 
+
+if __name__ == "__main__":
+    print("Questions invoked from CLI.")
+    questions = Questions()
+    area = input("Enter interest area: ")
+    area_question = questions.select_question_by_interest(area)
+    print(area_question.print_question())
+    print(questions.select_question_random())

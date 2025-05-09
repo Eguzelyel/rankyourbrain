@@ -5,3 +5,4 @@
 question_bank/*
 
 .DS_Store
+__pycache__
