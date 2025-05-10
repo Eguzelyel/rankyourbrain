@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rank Your Brain - Question</title>
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <h1>Rank Your Brain</h1>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+            <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+            <a href="{{ url_for('get_leaderboard') }}" class="nav-link">Leaderboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Question: {{ question.subject }} - {{ question.name }}</h2>
+
+    <div class="question-container">
+        <img src="{{ url_for('question_image', filename=question.question_path) }}" alt="Question Image" class="question-image">
+    </div>
+
+    <form action="{{ url_for('submit_answer') }}" method="POST" class="answer-form">
+        <input type="hidden" name="question_id" value="{{ question }}">
+
+        {% if question.answer in "ABCDE" %}
+        <!-- Multiple choice question -->
+        <div class="multiple-choice">
+            <div class="option">
+                <input type="radio" id="option-a" name="answer" value="A" required>
+                <label for="option-a">A</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option-b" name="answer" value="B">
+                <label for="option-b">B</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option-c" name="answer" value="C">
+                <label for="option-c">C</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option-d" name="answer" value="D">
+                <label for="option-d">D</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option-e" name="answer" value="E">
+                <label for="option-e">E</label>
+            </div>
+        </div>
+        {% else %}
+        <!-- Text answer question -->
+        <div class="text-answer">
+            <input type="text" name="answer" placeholder="Your answer" required>
+        </div>
+        {% endif %}
+
+        <div class="button-container">
+            <button type="submit" class="button">Submit Answer</button>
+            <a href="{{ url_for('get_question') }}" class="button">Skip Question</a>
+            <a href="{{ url_for('profile') }}" class="button">View Progress</a>
+        </div>
+    </form>
+
+    <div class="user-progress">
+        <p>User: {{ current_user.first_name }} {{ current_user.last_name }}</p>
+        {% set session = current_user.progress|length %}
+        <p>Questions answered: {{ session }}</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Rank Your Brain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

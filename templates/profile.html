@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Rank Your Brain</title>
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+</head>
+<body>
+    <h1>Your Profile</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-container">
+        <div class="profile-info">
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p>Email: {{ user.email }}</p>
+            <p>Member since: {{ user.created_at.strftime('%B %d, %Y') }}</p>
+        </div>
+
+        <div class="quiz-progress">
+            <h2>Quiz Progress</h2>
+            {% if session %}
+                <p>Total questions answered: {{ session.total_questions }}</p>
+                <p>Correct answers: {{ session.correct_answers }}</p>
+                <p>Score: {{ (session.correct_answers / session.total_questions * 100)|round(2) if session.total_questions > 0 else 0 }}%</p>
+                
+                {% if session.last_question_subject %}
+                    <p>Last question: {{ session.last_question_subject }} - {{ session.last_question_name }}</p>
+                    <a href="{{ url_for('get_question') }}" class="button">Continue Quiz</a>
+                {% else %}
+                    <p>You haven't started any quizzes yet.</p>
+                    <a href="{{ url_for('get_question') }}" class="button">Start Quiz</a>
+                {% endif %}
+            {% else %}
+                <p>No quiz progress found.</p>
+                <a href="{{ url_for('get_question') }}" class="button">Start Quiz</a>
+            {% endif %}
+        </div>
+
+        {% if progress %}
+            <div class="question-history">
+                <h2>Question History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Question</th>
+                            <th>Result</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in progress|sort(attribute='answered_at', reverse=True) %}
+                            <tr>
+                                <td>{{ item.subject }}</td>
+                                <td>{{ item.question_name }}</td>
+                                <td>{{ 'Correct' if item.correct else 'Incorrect' }}</td>
+                                <td>{{ item.answered_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="links">
+        <a href="{{ url_for('index') }}" class="button">Home</a>
+        <a href="{{ url_for('get_leaderboard') }}" class="button">Leaderboard</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    </div>
+</body>
+</html>
