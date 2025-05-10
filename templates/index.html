@@ -7,20 +7,58 @@
     <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
 </head>
 <body>
-    <h1>Rank Your Brain</h1>
+    <header>
+        <h1>Rank Your Brain</h1>
+        <nav class="main-nav">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                <a href="{{ url_for('get_leaderboard') }}" class="nav-link">Leaderboard</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+                <a href="{{ url_for('get_leaderboard') }}" class="nav-link">Leaderboard</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
     <!-- Code following the tutorial -->
     <form action="/choose_area">
         <label for="interest_area"></label><input type="text" name="interest_area" id="interest_area" placeholder="Enter your interest area">
         <button type="submit">Submit</button>
+        <!-- This should be an option between STEM vs Arts. If stem, more questions from STEM subjects. If arts, more questions from Arts subjects. -->
     </form>
 
     <div class="welcome-container">
         <p>Test your knowledge across various subjects and see how you rank!</p>
+        {% if current_user.is_authenticated %}
+            <p>Welcome back, {{ current_user.first_name }}! Ready to continue your quiz journey?</p>
+            {% if current_user.progress %}
+                <p>You've answered {{ current_user.progress|length }} questions so far.</p>
+            {% endif %}
+        {% else %}
+            <p>Create an account to track your progress and see how you rank against others!</p>
+        {% endif %}
     </div>
 
     <div class="button-container">
-        <a href="{{ url_for('get_question') }}" class="button">Start Quiz</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('get_question') }}" class="button">Continue Quiz</a>
+            <a href="{{ url_for('profile') }}" class="button">View Profile</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="button">Login to Start</a>
+            <a href="{{ url_for('register') }}" class="button">Register</a>
+        {% endif %}
     </div>
 
     <div class="subjects-container">
@@ -35,5 +73,9 @@
             <li>And more...</li>
         </ul>
     </div>
+
+    <footer>
+        <p>&copy; 2025 Rank Your Brain. All rights reserved.</p>
+    </footer>
 </body>
 </html>

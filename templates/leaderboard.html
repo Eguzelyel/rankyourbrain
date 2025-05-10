@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ competition }} Leaderboard</title>
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <h1>{{ competition }} Leaderboard</h1>
+        <nav class="main-nav">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            {% else %}
+                <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="leaderboard-container">
+        {% if current_user.is_authenticated %}
+            <div class="user-rank">
+                <h2>Your Rank</h2>
+                <p>{{ user }}'s rank: {% if user_rank %}#{{ user_rank }}{% else %}Not ranked yet{% endif %}</p>
+            </div>
+        {% endif %}
+
+        <div class="leaderboard-table">
+            <h2>Top Quiz Performers</h2>
+            {% if leaderboard %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Correct Answers</th>
+                            <th>Total Questions</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in leaderboard %}
+                            <tr {% if current_user.is_authenticated and entry.user.id == current_user.id %}class="current-user"{% endif %}>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ entry.user.first_name }} {{ entry.user.last_name }}</td>
+                                <td>{{ entry.correct }}</td>
+                                <td>{{ entry.total }}</td>
+                                <td>{{ entry.score|round(2) }}%</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No quiz data available yet. Be the first to take the quiz!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="button-container">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('get_question') }}" class="button">Take Quiz</a>
+            <a href="{{ url_for('profile') }}" class="button">View Profile</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="button">Login to Start</a>
+            <a href="{{ url_for('register') }}" class="button">Register</a>
+        {% endif %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Rank Your Brain. All rights reserved.</p>
+    </footer>
+</body>
+</html>
