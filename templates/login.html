@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Rank Your Brain</title>
     <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" type="image/png">
 </head>
 <body>
-    <h1>Login to Rank Your Brain</h1>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo/ayakustu_logo_white.png') }}" alt="Ayakustu Logo" class="logo-white">
+        </div>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-button">Home</a>
+            <a href="{{ url_for('register') }}" class="nav-button">Register</a>
+        </nav>
+    </header>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -25,19 +34,15 @@
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            
+
             <button type="submit" class="button">Login</button>
         </form>
     </div>
-    
-    <div class="links">
-        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
-        <p><a href="{{ url_for('index') }}">Back to Home</a></p>
-    </div>
+
 </body>
 </html>

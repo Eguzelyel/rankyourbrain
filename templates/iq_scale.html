@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IQ Scale - Rank Your Brain</title>
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" type="image/png">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" alt="Ayakustu Logo" class="logo-icon">
+        </div>
+        <h1>IQ Scale Explained</h1>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-button">Home</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('profile') }}" class="nav-button">Profile</a>
+                <a href="{{ url_for('get_leaderboard') }}" class="nav-button">Leaderboard</a>
+                <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="nav-button">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-button">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="content-container">
+        <section class="iq-explanation">
+            <h2>Understanding IQ Scores</h2>
+            <p>
+                IQ (Intelligence Quotient) is a measure of a person's reasoning ability. It is meant to gauge how well someone can use information and logic to answer questions or make predictions.
+            </p>
+            <p>
+                In Rank Your Brain, we calculate two types of IQ scores:
+            </p>
+            <ul>
+                <li><strong>STEM IQ</strong>: Based on your performance in mathematics, physics, biology, chemistry.</li>
+                <li><strong>Verbal IQ</strong>: Based on your performance in language, geography, history, and psychology.</li>
+            </ul>
+        </section>
+
+        <section class="iq-scale">
+            <h2>IQ Scale Ranges</h2>
+            <table class="iq-table">
+                <thead>
+                    <tr>
+                        <th>IQ Range</th>
+                        <th>Classification</th>
+                        <th>% of Population</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>130 and above</td>
+                        <td>Very Superior</td>
+                        <td>2.2%</td>
+                    </tr>
+                    <tr>
+                        <td>120-129</td>
+                        <td>Superior</td>
+                        <td>6.7%</td>
+                    </tr>
+                    <tr>
+                        <td>110-119</td>
+                        <td>High Average</td>
+                        <td>16.1%</td>
+                    </tr>
+                    <tr>
+                        <td>90-109</td>
+                        <td>Average</td>
+                        <td>50%</td>
+                    </tr>
+                    <tr>
+                        <td>80-89</td>
+                        <td>Low Average</td>
+                        <td>16.1%</td>
+                    </tr>
+                    <tr>
+                        <td>70-79</td>
+                        <td>Borderline</td>
+                        <td>6.7%</td>
+                    </tr>
+                    <tr>
+                        <td>Below 70</td>
+                        <td>Extremely Low</td>
+                        <td>2.2%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="iq-calculation">
+            <h2>How We Calculate Your IQ</h2>
+            <p>
+                In Rank Your Brain, your IQ scores are calculated based on your performance in various subject areas:
+            </p>
+            <ol>
+                <li>We track your correct and incorrect answers in each subject.</li>
+                <li>Each question has a specific weight for STEM and Verbal categories.</li>
+                <li>Correct answers add points to your score, while incorrect answers may slightly decrease it.</li>
+                <li>The final score is normalized to fit the standard IQ scale with a mean of 100 and a standard deviation of 15.</li>
+            </ol>
+            <p>
+                Keep in mind that these scores are meant to be a fun way to track your progress and are not equivalent to professional IQ assessments.
+            </p>
+            <p>
+                <a href="https://www.verywellmind.com/what-is-a-genius-iq-score-2795585" target="_blank">
+                Real IQ scores are explained in detail here. </a>
+            </p>
+        </section>
+
+        <div class="button-container">
+            <a href="{{ url_for('profile') }}" class="button">Back to Profile</a>
+            <a href="{{ url_for('get_question') }}" class="button">Take More Quizzes</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Rank Your Brain. All rights reserved.</p>
+    </footer>
+</body>
+</html>

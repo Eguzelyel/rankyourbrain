@@ -5,19 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rank Your Brain</title>
     <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" type="image/png">
 </head>
 <body>
     <header>
-        <h1>Rank Your Brain</h1>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo/ayakustu_logo_white.png') }}" alt="Ayakustu Logo" class="logo-white">
+        </div>
         <nav class="main-nav">
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('profile') }}" class="nav-link">Profile</a>
-                <a href="{{ url_for('get_leaderboard') }}" class="nav-link">Leaderboard</a>
-                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                <a href="{{ url_for('profile') }}" class="nav-button">Profile</a>
+                <a href="{{ url_for('get_leaderboard') }}" class="nav-button">Leaderboard</a>
+                <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
-                <a href="{{ url_for('register') }}" class="nav-link">Register</a>
-                <a href="{{ url_for('get_leaderboard') }}" class="nav-link">Leaderboard</a>
+                <a href="{{ url_for('login') }}" class="nav-button">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-button">Register</a>
+                <a href="{{ url_for('get_leaderboard') }}" class="nav-button">Leaderboard</a>
             {% endif %}
         </nav>
     </header>
@@ -33,11 +36,11 @@
     {% endwith %}
 
     <!-- Code following the tutorial -->
-    <form action="/choose_area">
-        <label for="interest_area"></label><input type="text" name="interest_area" id="interest_area" placeholder="Enter your interest area">
-        <button type="submit">Submit</button>
-        <!-- This should be an option between STEM vs Arts. If stem, more questions from STEM subjects. If arts, more questions from Arts subjects. -->
-    </form>
+{#    <form action="/choose_area">#}
+{#        <label for="interest_area"></label><input type="text" name="interest_area" id="interest_area" placeholder="Enter your interest area">#}
+{#        <button type="submit">Submit</button>#}
+{#        <!-- This should be an option between STEM vs Arts. If stem, more questions from STEM subjects. If arts, more questions from Arts subjects. -->#}
+{#    </form>#}
 
     <div class="welcome-container">
         <p>Test your knowledge across various subjects and see how you rank!</p>

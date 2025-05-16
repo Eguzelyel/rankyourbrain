@@ -2,7 +2,7 @@ import random
 
 from dotenv import load_dotenv
 # from pprint import pprint
-import requests
+# import requests
 import logging
 import settings
 from pathlib import Path
@@ -27,6 +27,8 @@ class Question:
         self.subject = subject
         self.question_path = question_path
         self.answer = answer
+        self.stem_weight = 1
+        self.verbal_weight = 1
         # Each question should have weight based on the area.
         #  For example, physics and math questions should give 4 sayisal points but 1 sozel point
         #  whereas a geography question should be 2 sayısal, 3 sözel points.
@@ -43,6 +45,37 @@ class Question:
 
     def display_image(self):
         return self.question_path
+
+    def assign_weight(self, stem_weight, verbal_weight):
+        self.stem_weight = stem_weight
+        self.verbal_weight = verbal_weight
+
+class Weights:
+    """ Define the weights of the areas. """
+
+    def __init__(self):
+        self.weights = self.load_question_weights()
+
+    @staticmethod
+    def load_question_weights():
+        """ Weights of each subject. Tuple of Sayisal and Sozel constants."""
+        # Maybe this should take the values from a csv?
+        weights = {
+            "ictm": (5, 1),
+            "math": (4, 1),
+            "physics": (4, 1),
+            "biology": (4, 2),
+            "chemistry": (4, 1),
+            "world_history": (1, 4),
+            "history": (1, 4),
+            "turkish_history": (1, 4),
+            "us_history": (1, 4),
+            "geography": (2, 4),
+            "language": (1, 4),
+            "psychology": (2, 4),
+        }
+
+        return weights
 
 class Questions:
     """ Question type ideas.
@@ -69,7 +102,6 @@ class Questions:
     def __init__(self, questions_path=settings.questions_path):
         self.questions = self.load_questions(questions_path)
 
-
     @staticmethod
     def load_questions(path: str) -> dict:
         """
@@ -89,6 +121,7 @@ class Questions:
         """
         image_files = Path(path).glob('*/*')
         # image_files = glob.glob(path)
+        w = Weights()
 
         questions = {}
 
@@ -98,19 +131,27 @@ class Questions:
         # This should return a dictionary instead
         for image_path in image_files:
             image_name, question_answer = str(image_path.with_suffix('').name).split("_")
-            if image_name == ".DS_Store":
+            if ".DS" in image_name:
                 # Mac constantly creates this file even though unnecessary.
                 continue
 
             image_folder = image_path.parent.name
+            # Store relative path instead of full path for proper static file serving
+            relative_path = f"{image_folder}/{image_path.name}"
             question = Question(name=image_name, subject=image_folder,
-                                question_path=str(image_path),
+                                question_path=relative_path,
                                 answer=question_answer,
                                 )
-            print(f"{question=} "
+
+            # Assign STEM vs Art weights.
+            question.assign_weight(*w.weights[image_folder])
+
+            print(#f"{question=} "
                   f"{question.name=} "
                   f"{question.subject=} "
-                  f"{question.question_path=} ")
+                  f"{question.question_path=} "
+                  f"{question.stem_weight=} "
+                  f"{question.verbal_weight=} ")
 
             if image_folder in questions:
                 questions[image_folder].append(question)
@@ -133,11 +174,44 @@ class Questions:
     def select_question_random(self) -> Question:
         """ Select a random question from a random interest area. """
         rand_subject = random.choice(list(self.questions.keys()))
-        rand_question = self.questions[rand_subject].pop(
-            random.randint(
-            0, len(self.questions[rand_subject]))
-        )
+        rand_index = random.randint(0, len(self.questions[rand_subject]) - 1)
+        rand_question = self.questions[rand_subject][rand_index]
         return rand_question
+
+    def select_unanswered_question(self, user_id) -> Question:
+        """ Select a random question that the user has not answered yet.
+
+        Args:
+            user_id: The ID of the current user
+
+        Returns:
+            A random question that the user has not answered yet, or None if all questions have been answered
+        """
+        from models import UserProgress
+
+        # Get all questions the user has answered (not skipped)
+        answered_questions = UserProgress.query.filter_by(
+            user_id=user_id, 
+            status='answered'
+        ).all()
+
+        # Create a set of (subject, name) tuples for quick lookup
+        answered_set = {(q.subject, q.question_name) for q in answered_questions}
+
+        # Create a list of all available questions that haven't been answered
+        available_questions = []
+
+        for subject, question_list in self.questions.items():
+            for question in question_list:
+                if (subject, question.name) not in answered_set:
+                    available_questions.append(question)
+
+        # If there are no unanswered questions, return None
+        if not available_questions:
+            return None
+
+        # Select a random question from the available ones
+        return random.choice(available_questions)
 
     def select_question_by_interest(self, interest_area: str):
         """ Select the question based on users selection on interests."""

@@ -5,9 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Rank Your Brain</title>
     <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" type="image/png">
 </head>
 <body>
-    <h1>Register for Rank Your Brain</h1>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo/ayakustu_logo_white.png') }}" alt="Ayakustu Logo" class="logo-white">
+        </div>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-button">Home</a>
+            <a href="{{ url_for('login') }}" class="nav-button">Login</a>
+        </nav>
+    </header>
+
+    <p> This is to save your progress. Don't sweat on it, an easy password would suffice.</p>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -25,29 +36,25 @@
                 <label for="first_name">First Name</label>
                 <input type="text" id="first_name" name="first_name" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="last_name">Last Name</label>
                 <input type="text" id="last_name" name="last_name" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            
+
             <button type="submit" class="button">Register</button>
         </form>
     </div>
-    
-    <div class="links">
-        <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
-        <p><a href="{{ url_for('index') }}">Back to Home</a></p>
-    </div>
+
 </body>
 </html>

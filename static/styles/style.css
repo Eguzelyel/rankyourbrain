@@ -6,28 +6,38 @@
 
 body {
     padding: 2rem;
-    background-color: #333;
-    color: whitesmoke;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #2c3e50;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2rem;
     font-size: 1.6rem;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
 h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
     text-align: center;
-    color: #f5f5f5;
+    color: #3498db;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
     font-size: 2rem;
     margin-bottom: 1rem;
-    color: #f5f5f5;
+    color: #2980b9;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 p {
@@ -43,31 +53,83 @@ input, button {
     border: none;
 }
 
+input[type="text"], input[type="email"], input[type="password"] {
+    border: 1px solid #ddd;
+    background-color: white;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.2);
+    outline: none;
+}
+
 button {
-    background-color: #4CAF50;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
     color: white;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
-    background-color: #45a049;
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .button {
     display: inline-block;
-    background-color: #4CAF50;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
     color: white;
     padding: 1rem 2rem;
     text-decoration: none;
     border-radius: 10px;
     font-size: 1.6rem;
     margin: 0.5rem;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .button:hover {
-    background-color: #45a049;
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1rem 0;
+    width: 100%;
+    max-width: 800px;
+}
+
+.nav-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: white;
+    padding: 0.7rem 1.5rem;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-button:hover {
+    background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .welcome-container, .button-container, .subjects-container {
@@ -86,9 +148,17 @@ button:hover {
 }
 
 .subjects-list li {
-    background-color: #555;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
     padding: 0.5rem 1rem;
     border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.subjects-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .question-container {
@@ -96,18 +166,28 @@ button:hover {
     max-width: 800px;
     margin: 2rem 0;
     text-align: center;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .question-image {
     max-width: 100%;
     max-height: 500px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.question-image:hover {
+    transform: scale(1.02);
 }
 
 .multiple-choice {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     gap: 1rem;
     margin: 2rem 0;
 }
@@ -116,10 +196,209 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 1rem;
+    background-color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.option:hover {
+    background-color: #f0f4ff;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.option-button {
+    background: white;
+    color: #2c3e50;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.6rem;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.option-button:hover {
+    background-color: #f0f4ff;
+    border-color: #6a11cb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.option-button.selected {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.option input[type="radio"] {
+    accent-color: #6a11cb;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 
 .text-answer input {
     width: 100%;
     max-width: 400px;
     margin: 2rem 0;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.logo-transparent {
+    max-width: 300px;
+    height: auto;
+}
+
+.logo-white {
+    max-width: 300px;
+    height: auto;
+}
+
+.logo-icon {
+    max-width: 80px;
+    height: auto;
+}
+
+/* Flash messages */
+.flash-messages {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 1rem;
+}
+
+.flash-message {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* User progress */
+.user-progress {
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    margin: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Leaderboard table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background-color: #f5f7fa;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+.current-user {
+    background-color: rgba(106, 17, 203, 0.1);
+}
+
+/* Small button for links */
+.small-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-left: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.small-button:hover {
+    background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* IQ Scale page */
+.content-container {
+    width: 100%;
+    max-width: 800px;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.iq-explanation, .iq-scale, .iq-calculation {
+    margin-bottom: 2rem;
+}
+
+.iq-table {
+    width: 100%;
+    margin: 1rem 0;
+}
+
+/* Styling for lists in IQ calculation section */
+.iq-calculation ol, .iq-calculation ul {
+    padding-left: 2rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.iq-calculation li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    padding: 1rem;
+    text-align: center;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
 }

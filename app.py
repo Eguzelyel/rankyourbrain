@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, url_for, redirect, send_from_
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from questions import Questions
 from models import db, User, UserProgress, UserSession
+from leaderboard import IQRanking
 import settings
-import os
+
 from pathlib import Path
 from waitress import serve
+import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Change this to a random secret key in production
@@ -114,20 +116,66 @@ def profile():
     user_progress = UserProgress.query.filter_by(user_id=current_user.id).all()
     user_session = UserSession.query.filter_by(user_id=current_user.id).first()
 
+    # Calculate STEM and verbal IQ scores
+    iq_ranking = IQRanking()
+    stem_iq = iq_ranking.calculate_stem_iq(current_user.id)
+    verbal_iq = iq_ranking.calculate_verbal_iq(current_user.id)
+
     return render_template('profile.html', 
                           user=current_user, 
                           progress=user_progress, 
-                          session=user_session)
+                          session=user_session,
+                          stem_iq=stem_iq,
+                          verbal_iq=verbal_iq)
+
+@app.route('/iq_scale')
+def iq_scale():
+    """Display information about IQ scale"""
+    return render_template('iq_scale.html')
 
 @app.route('/get_question', methods=['GET', 'POST'])
 @login_required
 def get_question():
-    """Get a random question and display it"""
+    """Get a random question that the user hasn't answered yet and display it"""
     # Get user session
     user_session = UserSession.query.filter_by(user_id=current_user.id).first()
 
-    # Get a random question
-    question = questions.select_question_random()
+    # Get a random unanswered question
+    question = questions.select_unanswered_question(current_user.id)
+
+    # If all questions have been answered, show a message
+    if question is None:
+        flash('You have answered all available questions! Check your profile to review your progress.')
+        return redirect(url_for('profile'))
+
+    # Update user session with current question
+    user_session.last_question_subject = question.subject
+    user_session.last_question_name = question.name
+    db.session.commit()
+
+    # Render the question template with the question data
+    return render_template('question.html', question=question)
+
+@app.route('/get_specific_question', methods=['POST'])
+@login_required
+def get_specific_question():
+    """Get a specific question by subject and name"""
+    subject = request.form.get('subject')
+    name = request.form.get('name')
+
+    # Find the question in the questions collection
+    question = None
+    for q in questions.questions.get(subject, []):
+        if q.name == name:
+            question = q
+            break
+
+    if not question:
+        flash('Question not found.')
+        return redirect(url_for('profile'))
+
+    # Get user session
+    user_session = UserSession.query.filter_by(user_id=current_user.id).first()
 
     # Update user session with current question
     user_session.last_question_subject = question.subject
@@ -140,8 +188,8 @@ def get_question():
 @app.route('/question_image/<path:filename>')
 def question_image(filename):
     """Serve question images from the question_bank directory"""
-    question_bank_dir = Path(settings.questions_path).parent
-    return send_from_directory(question_bank_dir, filename)
+    # Use the static/question_bank directory directly
+    return send_from_directory('static/question_bank', filename)
 
 @app.route('/submit_answer', methods=['POST'])
 @login_required
@@ -160,21 +208,51 @@ def submit_answer():
         for q in questions.questions.get(subject, []):
             if q.name == name:
                 correct = (q.answer.lower() == user_answer.lower())
+                stem_score = q.stem_weight if correct else q.stem_weight*(-0.2)
+                verbal_score = q.verbal_weight if correct else q.verbal_weight*(-0.2)
 
-                # Record the user's progress
-                progress = UserProgress(
+                # Check if this question was previously answered or skipped by this user
+                existing_progress = UserProgress.query.filter_by(
                     user_id=current_user.id,
                     subject=subject,
-                    question_name=name,
-                    correct=correct
-                )
-                db.session.add(progress)
+                    question_name=name
+                ).first()
 
                 # Update user session
                 user_session = UserSession.query.filter_by(user_id=current_user.id).first()
-                user_session.total_questions += 1
-                if correct:
-                    user_session.correct_answers += 1
+
+                if existing_progress:
+                    # Update the existing record
+                    existing_progress.correct = correct
+                    existing_progress.stem_score = stem_score
+                    existing_progress.verbal_score = verbal_score
+                    existing_progress.status = 'answered'
+                    existing_progress.answered_at = datetime.datetime.now(datetime.UTC)
+
+                    # Only increment total_questions if it was previously skipped
+                    # and not counted as answered
+                    if existing_progress.status == 'skipped':
+                        user_session.total_questions += 1
+                        if correct:
+                            user_session.correct_answers += 1
+                else:
+                    # Create a new progress record
+                    progress = UserProgress(
+                        user_id=current_user.id,
+                        subject=subject,
+                        question_name=name,
+                        correct=correct,
+                        stem_score=stem_score,
+                        verbal_score=verbal_score,
+                        status='answered',
+                    )
+                    db.session.add(progress)
+
+                    # Increment counters for new questions
+                    user_session.total_questions += 1
+                    if correct:
+                        user_session.correct_answers += 1
+
                 db.session.commit()
 
                 # Flash message about the answer
@@ -188,37 +266,113 @@ def submit_answer():
     # Redirect to a new question
     return redirect(url_for('get_question'))
 
-@app.route('/leaderboard')
-def get_leaderboard():
-    """Display the leaderboard"""
-    # Get all users and their sessions
-    users = User.query.all()
-    sessions = UserSession.query.all()
+@app.route('/skip_question', methods=['POST'])
+@login_required
+def skip_question():
+    """Process the skipped question. This should still add a row with -0.1 weight."""
 
-    # Create a list of users with their scores
+    # Get the question_id from the form
+    question_id = request.form.get('question_id')
+
+    # Parse question_id to get subject and name
+    parts = str(question_id).split('_')
+    if len(parts) >= 2:
+        subject = parts[0]
+        name = parts[1]
+
+        # Get the question
+        for q in questions.questions.get(subject, []):
+            if q.name == name:
+                # Calculate scores with -0.1 weight
+                stem_score = q.stem_weight * (-0.1)
+                verbal_score = q.verbal_weight * (-0.1)
+
+                # Check if this question was previously skipped by this user
+                existing_progress = UserProgress.query.filter_by(
+                    user_id=current_user.id,
+                    subject=subject,
+                    question_name=name
+                ).first()
+
+                if existing_progress:
+                    # Update the existing record
+                    existing_progress.correct = False
+                    existing_progress.stem_score = stem_score
+                    existing_progress.verbal_score = verbal_score
+                    existing_progress.status = 'skipped'
+                    existing_progress.answered_at = datetime.datetime.now(datetime.UTC)
+                else:
+                    # Create a new progress record
+                    progress = UserProgress(
+                        user_id=current_user.id,
+                        subject=subject,
+                        question_name=name,
+                        correct=False,
+                        stem_score=stem_score,
+                        verbal_score=verbal_score,
+                        status='skipped',
+                    )
+                    db.session.add(progress)
+
+                # Update user session
+                user_session = UserSession.query.filter_by(user_id=current_user.id).first()
+                user_session.total_questions += 1
+                db.session.commit()
+
+                # Flash message about skipping
+                flash('Question skipped. You can try it again later.')
+
+                break
+
+    # Redirect to a new question
+    return redirect(url_for('get_question'))
+
+
+@app.route('/leaderboard')
+@app.route('/leaderboard/<leaderboard_type>')
+def get_leaderboard(leaderboard_type='stem'):
+    """Display the leaderboard for either STEM or verbal IQ"""
+    # Validate leaderboard_type
+    if leaderboard_type not in ['stem', 'verbal']:
+        leaderboard_type = 'stem'
+
+    # Get all users
+    users = User.query.all()
+
+    # Create IQ ranking instance
+    iq_ranking = IQRanking()
+
+    # Create a list of users with their IQ scores
     leaderboard = []
     for user in users:
-        session = next((s for s in sessions if s.user_id == user.id), None)
-        if session:
+        # Calculate the appropriate IQ score based on leaderboard_type
+        if leaderboard_type == 'stem':
+            iq_score = iq_ranking.calculate_stem_iq(user.id)
+            competition = "STEM IQ Leaderboard"
+        else:
+            iq_score = iq_ranking.calculate_verbal_iq(user.id)
+            competition = "Verbal IQ Leaderboard"
+
+        # Only include users with scores > 0
+        if iq_score > 0:
             leaderboard.append({
                 'user': user,
-                'correct': session.correct_answers,
-                'total': session.total_questions,
-                'score': session.correct_answers / max(1, session.total_questions) * 100
+                'score': iq_score
             })
 
     # Sort by score (descending)
     leaderboard.sort(key=lambda x: x['score'], reverse=True)
 
     # Find current user's rank
-    user_rank = next((i+1 for i, entry in enumerate(leaderboard) 
+    user_rank = next((i+1 for i, entry in enumerate(leaderboard)
                      if entry['user'].id == current_user.id), None) if current_user.is_authenticated else None
 
-    return render_template('leaderboard.html', 
-                          leaderboard=leaderboard, 
+    return render_template('leaderboard.html',
+                          leaderboard=leaderboard,
                           user=current_user.first_name if current_user.is_authenticated else "Guest",
                           user_rank=user_rank,
-                          competition="Brain Quiz")
+                          competition=competition,
+                          leaderboard_type=leaderboard_type)
 
 if __name__ == '__main__':
     with app.app_context():

@@ -13,18 +13,18 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+
     # Relationship with UserProgress
     progress = db.relationship('UserProgress', backref='user', lazy=True)
-    
+
     def set_password(self, password):
         """Set the password hash for the user"""
         self.password_hash = generate_password_hash(password)
-        
+
     def check_password(self, password):
         """Check if the provided password matches the stored hash"""
         return check_password_hash(self.password_hash, password)
-    
+
     def __repr__(self):
         return f'<User {self.email}>'
 
@@ -35,8 +35,11 @@ class UserProgress(db.Model):
     subject = db.Column(db.String(50), nullable=False)
     question_name = db.Column(db.String(50), nullable=False)
     correct = db.Column(db.Boolean, default=False)
+    stem_score = db.Column(db.Double, nullable=False)
+    verbal_score = db.Column(db.Double, nullable=False)
+    status = db.Column(db.String(20), default='unanswered')  # 'answered', 'skipped', 'unanswered'
     answered_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+
     def __repr__(self):
         return f'<UserProgress {self.user_id} - {self.subject}_{self.question_name}>'
 
@@ -49,6 +52,6 @@ class UserSession(db.Model):
     correct_answers = db.Column(db.Integer, default=0)
     total_questions = db.Column(db.Integer, default=0)
     last_active = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+
     def __repr__(self):
         return f'<UserSession {self.user_id}>'

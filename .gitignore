@@ -2,7 +2,8 @@
 .env
 .idea
 
-question_bank/*
+*/question_bank/*
+instance/*
 
 .DS_Store
 __pycache__

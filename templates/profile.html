@@ -5,9 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Rank Your Brain</title>
     <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet" />
+    <link rel="icon" href="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" type="image/png">
 </head>
 <body>
-    <h1>Your Profile</h1>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo/ayakustu_logo_icon.png') }}" alt="Ayakustu Logo" class="logo-icon">
+        </div>
+        <h1>Your Profile</h1>
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}" class="nav-button">Home</a>
+            <a href="{{ url_for('get_leaderboard') }}" class="nav-button">Leaderboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+        </nav>
+    </header>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -32,7 +43,7 @@
                 <p>Total questions answered: {{ session.total_questions }}</p>
                 <p>Correct answers: {{ session.correct_answers }}</p>
                 <p>Score: {{ (session.correct_answers / session.total_questions * 100)|round(2) if session.total_questions > 0 else 0 }}%</p>
-                
+
                 {% if session.last_question_subject %}
                     <p>Last question: {{ session.last_question_subject }} - {{ session.last_question_name }}</p>
                     <a href="{{ url_for('get_question') }}" class="button">Continue Quiz</a>
@@ -44,6 +55,22 @@
                 <p>No quiz progress found.</p>
                 <a href="{{ url_for('get_question') }}" class="button">Start Quiz</a>
             {% endif %}
+        </div>
+
+        <div class="iq-scores">
+            <h2>Your IQ Scores <a href="{{ url_for('iq_scale') }}" class="small-button">IQ Scale Explained</a></h2>
+            <div class="iq-score-container">
+                <div class="iq-score stem">
+                    <h3>STEM IQ</h3>
+                    <p class="iq-value">{{ stem_iq }}</p>
+                    <p class="iq-description">Based on performance in math, ictm, biology, chemistry, and physics</p>
+                </div>
+                <div class="iq-score verbal">
+                    <h3>Verbal IQ</h3>
+                    <p class="iq-value">{{ verbal_iq }}</p>
+                    <p class="iq-description">Based on performance in language, geography, history, and psychology</p>
+                </div>
+            </div>
         </div>
 
         {% if progress %}
@@ -63,7 +90,25 @@
                             <tr>
                                 <td>{{ item.subject }}</td>
                                 <td>{{ item.question_name }}</td>
-                                <td>{{ 'Correct' if item.correct else 'Incorrect' }}</td>
+                                <td>
+                                    {% if item.status == 'skipped' %}
+                                        Skipped
+                                        <form action="{{ url_for('get_specific_question') }}" method="POST" style="display: inline;">
+                                            <input type="hidden" name="subject" value="{{ item.subject }}">
+                                            <input type="hidden" name="name" value="{{ item.question_name }}">
+                                            <button type="submit" class="small-button">Try Again</button>
+                                        </form>
+                                    {% elif item.status == 'unanswered' %}
+                                        Unanswered
+                                        <form action="{{ url_for('get_specific_question') }}" method="POST" style="display: inline;">
+                                            <input type="hidden" name="subject" value="{{ item.subject }}">
+                                            <input type="hidden" name="name" value="{{ item.question_name }}">
+                                            <button type="submit" class="small-button">Answer Now</button>
+                                        </form>
+                                    {% else %}
+                                        {{ 'Correct' if item.correct else 'Incorrect' }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ item.answered_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             </tr>
                         {% endfor %}
@@ -72,11 +117,6 @@
             </div>
         {% endif %}
     </div>
-    
-    <div class="links">
-        <a href="{{ url_for('index') }}" class="button">Home</a>
-        <a href="{{ url_for('get_leaderboard') }}" class="button">Leaderboard</a>
-        <a href="{{ url_for('logout') }}" class="button">Logout</a>
-    </div>
+
 </body>
 </html>
